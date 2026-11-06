@@ -39,7 +39,10 @@ public static class PrototypeSceneBuilder
         camera.farClipPlane = 95f;
         camera.clearFlags = CameraClearFlags.SolidColor;
         cameraObject.AddComponent<AudioListener>();
-        cameraObject.AddComponent<DriverCamera>();
+        var driverCamera = cameraObject.AddComponent<DriverCamera>();
+        driverCamera.Configure(shift);
+        var vhs = cameraObject.AddComponent<VhsEffect>();
+        vhs.Configure(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Shaders/Vhs.shader"));
 
         var cabin = new GameObject("Old Bus Cabin");
         Cube("Dashboard", cabin.transform, new Vector3(0f, 1.2f, -1.25f), new Vector3(4.2f, 0.55f, 1.15f), dark);
@@ -108,6 +111,12 @@ public static class PrototypeSceneBuilder
         var fifthMark = Cube("Hidden Fifth Gear Mark", cabin.transform, new Vector3(1.55f, 1.52f, -1.28f), new Vector3(0.12f, 0.42f, 0.025f), lamp, new Vector3(0f, 0f, -20f));
         finalEvent.Configure(shift, mirrorEvent, fifthMark);
         hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent);
+        var endingLoop = systems.AddComponent<EndingLoop>();
+        endingLoop.Configure(finalEvent);
+        var audioDirector = systems.AddComponent<AudioDirector>();
+        audioDirector.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent,
+            Clip("engine_loop"), Clip("radio_static"), Clip("gear_clunk"),
+            Clip("door_hiss"), Clip("broadcast_chime"), Clip("ending_surge"));
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);
@@ -121,6 +130,11 @@ public static class PrototypeSceneBuilder
     {
         Build();
         EditorApplication.Exit(0);
+    }
+
+    private static AudioClip Clip(string name)
+    {
+        return AssetDatabase.LoadAssetAtPath<AudioClip>($"Assets/Audio/{name}.wav");
     }
 
     private static Material Material(string name, Color color)
