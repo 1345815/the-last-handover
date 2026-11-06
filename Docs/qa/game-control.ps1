@@ -16,6 +16,7 @@ public static class K {
   [DllImport("user32.dll")] public static extern void SwitchToThisWindow(IntPtr h, bool altTab);
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+  [DllImport("user32.dll")] public static extern void mouse_event(uint flags, int dx, int dy, uint data, UIntPtr extra);
   [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int vk);
   public const uint DOWN = 0x0000, UP = 0x0002;
   public static void TapKey(byte vk) { keybd_event(vk, 0, DOWN, UIntPtr.Zero); System.Threading.Thread.Sleep(60); keybd_event(vk, 0, UP, UIntPtr.Zero); }
@@ -39,6 +40,10 @@ function Focus-Game {
 
 switch ($Action) {
   'focus' { Focus-Game }
+  'look'   {
+    Focus-Game
+    [K]::mouse_event(0x0001, [int]$Keys, 0, 0, [UIntPtr]::Zero)
+  }
   'tap'   {
     Focus-Game
     foreach ($k in $Keys.Split(',')) {

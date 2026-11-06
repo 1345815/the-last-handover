@@ -25,9 +25,13 @@ public static class PrototypeSceneBuilder
         var signFace = TexMat("SignFace", new Color(0.62f, 0.64f, 0.62f), "sign_face", 1f, 1f);
         var lampGlow = EmissiveTexMat("LampGlow", Color.white, "lampglow", 1f, 1f, new Color(1f, 0.85f, 0.55f) * 0.9f);
         var billboardMat = EmissiveTexMat("Billboard", Color.white, "billboard", 1f, 1f, new Color(0.85f, 0.8f, 0.7f) * 0.55f);
-        var raincoat = EmissiveTexMat("FigureSkin", new Color(0.72f, 0.68f, 0.55f), "raincoat", 1f, 1f, new Color(0.85f, 0.8f, 0.62f) * 0.35f);
         var building = TexMat("Building", new Color(0.35f, 0.35f, 0.36f), "building", 2f, 1f);
         var rail = TexMat("Rail", new Color(0.3f, 0.31f, 0.32f), "cabin_metal", 4f, 0.3f);
+        var nailongYellow = EmissiveMaterial("NailongYellow", new Color(0.98f, 0.8f, 0.2f), new Color(1.15f, 0.88f, 0.16f));
+        var nailongCream = Material("NailongCream", new Color(0.97f, 0.93f, 0.8f));
+        var nailongWhite = Material("NailongWhite", new Color(0.95f, 0.95f, 0.92f));
+        var nailongDark = Material("NailongDark", new Color(0.05f, 0.05f, 0.05f));
+        var nailongHorn = Material("NailongHorn", new Color(0.55f, 0.62f, 0.25f));
 
         var systems = new GameObject("Systems");
         var shift = systems.AddComponent<ShiftController>();
@@ -174,8 +178,9 @@ public static class PrototypeSceneBuilder
         Cube("StopSign", stop.transform, new Vector3(-2f, 1.8f, 0f), new Vector3(0.18f, 3.6f, 0.18f), dark);
         Cube("StopSignBoard", stop.transform, new Vector3(-2f, 3.1f, 0f), new Vector3(1.1f, 0.9f, 0.1f), signFace);
         Cube("Billboard Box", stop.transform, new Vector3(1.3f, 2.4f, 0.6f), new Vector3(2.2f, 1.3f, 0.15f), billboardMat);
-        var anomaly = Cube("Fourth Passenger", stop.transform, new Vector3(0f, 1.1f, -0.7f), new Vector3(0.55f, 2.2f, 0.42f), raincoat);
-        firstStop.Configure(shift, stop.transform, anomaly);
+        var anomalyNailong = BuildNailong(stop.transform, new Vector3(0f, 0.05f, -0.7f), new Vector3(0.85f, 0.85f, 0.85f),
+            nailongYellow, nailongCream, nailongWhite, nailongDark, nailongHorn, 90f);
+        firstStop.Configure(shift, stop.transform, anomalyNailong);
 
         var repeatedSigns = new GameObject("Repeated Stop Signs");
         repeatedSigns.transform.position = new Vector3(-4.8f, 0f, 72f);
@@ -190,14 +195,15 @@ public static class PrototypeSceneBuilder
         repeatedStop.Configure(shift, firstStop, repeatedSigns.transform);
 
         var mirror = Cube("Rear-view Mirror", cabin.transform, new Vector3(0f, 3.05f, -0.72f), new Vector3(1.65f, 0.48f, 0.12f), dark);
-        var mirrorDriver = Cube("Mirror Driver", mirror.transform, new Vector3(0f, 0f, -0.18f), new Vector3(0.22f, 0.65f, 0.08f), lamp);
+        var mirrorDriver = BuildNailong(mirror.transform, new Vector3(0f, -0.04f, -0.16f), new Vector3(0.24f, 0.8f, 1.1f),
+            nailongYellow, nailongCream, nailongWhite, nailongDark, nailongHorn, 0f);
         mirrorEvent.Configure(shift, repeatedStop, mirrorDriver);
         var fifthMark = Cube("Hidden Fifth Gear Mark", cabin.transform, new Vector3(1.55f, 1.52f, -1.28f), new Vector3(0.12f, 0.42f, 0.025f), lamp, new Vector3(0f, 0f, -20f));
         finalEvent.Configure(shift, mirrorEvent, fifthMark);
         var roadFigure = new GameObject("Road Figure");
         roadFigure.transform.position = new Vector3(0f, 0f, 40f);
-        Cube("Figure Body", roadFigure.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.55f, 2.2f, 0.32f), raincoat);
-        Cube("Figure Head", roadFigure.transform, new Vector3(0f, 2.4f, 0f), new Vector3(0.28f, 0.32f, 0.26f), raincoat);
+        BuildNailong(roadFigure.transform, new Vector3(0f, 0f, 0f), new Vector3(1.15f, 1.15f, 1.15f),
+            nailongYellow, nailongCream, nailongWhite, nailongDark, nailongHorn, 0f);
         var crossingEvent = new GameObject("Crossing Figure Event").AddComponent<CrossingFigureEvent>();
         crossingEvent.Configure(shift, repeatedStop, roadFigure.transform);
         hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent, crossingEvent);
@@ -221,6 +227,46 @@ public static class PrototypeSceneBuilder
     {
         Build();
         EditorApplication.Exit(0);
+    }
+
+    private static GameObject Sphere(string name, Transform parent, Vector3 position, Vector3 scale, Material material)
+    {
+        var item = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        item.name = name;
+        item.transform.SetParent(parent);
+        item.transform.localPosition = position;
+        item.transform.localScale = scale;
+        item.GetComponent<Renderer>().sharedMaterial = material;
+        Object.DestroyImmediate(item.GetComponent<Collider>());
+        return item;
+    }
+
+    /// <summary>
+    /// 程序化拼装一只低配奶龙：黄色圆身 + 浅色肚皮 + 大眼 + 头顶小角 + 短手短脚。
+    /// root 的 -z 为面部朝向；scale 直接落在 root 上以适配镜像等非均匀场合。
+    /// </summary>
+    private static GameObject BuildNailong(Transform parent, Vector3 localPosition, Vector3 scale,
+        Material yellow, Material cream, Material white, Material dark, Material horn, float yawDeg)
+    {
+        var root = new GameObject("Nailong");
+        root.transform.SetParent(parent);
+        root.transform.localPosition = localPosition;
+        root.transform.localScale = scale;
+        root.transform.localRotation = Quaternion.Euler(0f, yawDeg, 0f);
+        Sphere("Body", root.transform, new Vector3(0f, 0.72f, 0f), new Vector3(0.62f, 0.72f, 0.55f), yellow);
+        Sphere("Belly", root.transform, new Vector3(0f, 0.6f, -0.17f), new Vector3(0.42f, 0.5f, 0.3f), cream);
+        Sphere("Head", root.transform, new Vector3(0f, 1.24f, -0.02f), new Vector3(0.52f, 0.46f, 0.5f), yellow);
+        Cube("Mouth", root.transform, new Vector3(0f, 1.08f, -0.28f), new Vector3(0.16f, 0.035f, 0.03f), dark);
+        foreach (float side in new[] { -1f, 1f })
+        {
+            string tag = side < 0 ? "L" : "R";
+            Sphere($"Eye {tag}", root.transform, new Vector3(side * 0.15f, 1.36f, -0.24f), new Vector3(0.17f, 0.2f, 0.12f), white);
+            Sphere($"Pupil {tag}", root.transform, new Vector3(side * 0.15f, 1.36f, -0.34f), new Vector3(0.08f, 0.09f, 0.05f), dark);
+            Cube($"Horn {tag}", root.transform, new Vector3(side * 0.11f, 1.56f, 0.07f), new Vector3(0.07f, 0.17f, 0.07f), horn, new Vector3(0f, 0f, side * 12f));
+            Cube($"Arm {tag}", root.transform, new Vector3(side * 0.37f, 0.78f, -0.02f), new Vector3(0.11f, 0.28f, 0.13f), yellow);
+            Cube($"Foot {tag}", root.transform, new Vector3(side * 0.17f, 0.07f, -0.04f), new Vector3(0.17f, 0.12f, 0.24f), yellow);
+        }
+        return root;
     }
 
     private static Material TexMat(string name, Color color, string texture, float tx, float ty)

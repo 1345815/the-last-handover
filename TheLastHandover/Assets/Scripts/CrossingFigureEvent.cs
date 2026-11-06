@@ -40,7 +40,7 @@ namespace LastHandover
                 if (travelled < 14f) return;
                 phase = Phase.Approaching;
                 figureRoot.gameObject.SetActive(true);
-                Objective = "路中央站着一个人。它不躲雨。";
+                Objective = "路中央站着一只奶龙。它不躲雨。";
                 return;
             }
 
