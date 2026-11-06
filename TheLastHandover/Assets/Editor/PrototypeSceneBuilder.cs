@@ -27,6 +27,7 @@ public static class PrototypeSceneBuilder
         var reality = systems.AddComponent<RealityController>();
         var hud = systems.AddComponent<PrototypeHUD>();
         var firstStop = systems.AddComponent<FirstStopEvent>();
+        var repeatedStop = systems.AddComponent<RepeatedStopEvent>();
 
         var cameraObject = new GameObject("Driver Camera");
         cameraObject.transform.position = new Vector3(0f, 2.15f, -3.5f);
@@ -86,7 +87,19 @@ public static class PrototypeSceneBuilder
         Cube("StopSign", stop.transform, new Vector3(-2f, 1.8f, 0f), new Vector3(0.18f, 3.6f, 0.18f), dark);
         var anomaly = Cube("Fourth Passenger", stop.transform, new Vector3(0f, 1.1f, -0.7f), new Vector3(0.55f, 2.2f, 0.42f), dark);
         firstStop.Configure(shift, stop.transform, anomaly);
-        hud.Configure(shift, firstStop);
+
+        var repeatedSigns = new GameObject("Repeated Stop Signs");
+        repeatedSigns.transform.position = new Vector3(-4.8f, 0f, 72f);
+        for (int i = 0; i < 3; i++)
+        {
+            var sign = new GameObject($"Repeated Sign {i + 1}");
+            sign.transform.SetParent(repeatedSigns.transform);
+            sign.transform.localPosition = new Vector3(0f, 0f, i * 9f);
+            Cube("Post", sign.transform, new Vector3(0f, 1.7f, 0f), new Vector3(0.16f, 3.4f, 0.16f), dark);
+            Cube("Board", sign.transform, new Vector3(0f, 3.1f, 0f), new Vector3(1.8f, 0.75f, 0.16f), lamp);
+        }
+        repeatedStop.Configure(shift, firstStop, repeatedSigns.transform);
+        hud.Configure(shift, firstStop, repeatedStop);
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);

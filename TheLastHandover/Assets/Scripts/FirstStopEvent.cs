@@ -14,6 +14,7 @@ namespace LastHandover
         private int passengers = 3;
 
         public int PassengerCount => passengers;
+        public bool IsComplete => phase == Phase.Complete;
         public string Objective { get; private set; } = "前方站点：保持一档，准备停车";
 
         public void Configure(ShiftController controller, Transform root, GameObject anomaly)

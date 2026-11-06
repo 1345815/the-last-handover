@@ -6,7 +6,7 @@ You are taking over the final night bus. The gearbox does more than change speed
 
 ## Current milestone
 
-Prototype 0.1 validates the fixed driver camera, looping road, gear changes, speed changes, and gear-dependent lighting. It intentionally contains no external assets.
+Prototype 0.2 contains two complete anomaly loops: identify and remove a fourth passenger by shifting realities, then stop a repeating bus-stop loop by listening in neutral. It intentionally contains no external assets.
 
 ## Controls
 

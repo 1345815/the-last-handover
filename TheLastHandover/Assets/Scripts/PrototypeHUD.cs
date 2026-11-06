@@ -6,13 +6,15 @@ namespace LastHandover
     {
         [SerializeField] private ShiftController shift;
         [SerializeField] private FirstStopEvent stopEvent;
+        [SerializeField] private RepeatedStopEvent repeatedStop;
         private GUIStyle title;
         private GUIStyle small;
 
-        public void Configure(ShiftController controller, FirstStopEvent firstStop = null)
+        public void Configure(ShiftController controller, FirstStopEvent firstStop = null, RepeatedStopEvent secondStop = null)
         {
             shift = controller;
             stopEvent = firstStop;
+            repeatedStop = secondStop;
         }
 
         private void EnsureStyles()
@@ -39,7 +41,8 @@ namespace LastHandover
             if (stopEvent != null)
             {
                 GUI.Box(new Rect(25, Screen.height - 105, 650, 70), "");
-                GUI.Label(new Rect(40, Screen.height - 96, 620, 28), stopEvent.Objective, small);
+                string objective = repeatedStop != null && repeatedStop.IsActive ? repeatedStop.Objective : stopEvent.Objective;
+                GUI.Label(new Rect(40, Screen.height - 96, 620, 28), objective, small);
                 GUI.Label(new Rect(40, Screen.height - 68, 240, 28), $"车内乘客：{stopEvent.PassengerCount}", small);
             }
             string gear = shift == null ? "?" : shift.CurrentGear == Gear.Neutral ? "N" : ((int)shift.CurrentGear).ToString();
