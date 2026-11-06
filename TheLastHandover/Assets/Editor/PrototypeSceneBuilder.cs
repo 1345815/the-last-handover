@@ -16,10 +16,18 @@ public static class PrototypeSceneBuilder
         Directory.CreateDirectory("Assets/Materials");
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-        var dark = Material("DarkMetal", new Color(0.055f, 0.06f, 0.055f));
-        var road = Material("Road", new Color(0.035f, 0.04f, 0.045f));
+        var dark = TexMat("DarkMetal", new Color(0.055f, 0.06f, 0.055f), "cabin_metal", 1f, 1f);
+        var road = TexMat("Road", new Color(0.05f, 0.055f, 0.06f), "asphalt", 2f, 10f);
         var line = Material("RoadLine", new Color(0.55f, 0.48f, 0.25f));
         var lamp = Material("Lamp", new Color(0.65f, 0.52f, 0.28f));
+        var concrete = TexMat("Concrete", new Color(0.5f, 0.49f, 0.47f), "concrete", 2f, 1f);
+        var rubber = TexMat("Rubber", new Color(0.07f, 0.07f, 0.075f), "rubber", 1f, 1f);
+        var signFace = TexMat("SignFace", new Color(0.62f, 0.64f, 0.62f), "sign_face", 1f, 1f);
+        var lampGlow = EmissiveTexMat("LampGlow", Color.white, "lampglow", 1f, 1f, new Color(1f, 0.85f, 0.55f) * 0.9f);
+        var billboardMat = EmissiveTexMat("Billboard", Color.white, "billboard", 1f, 1f, new Color(0.85f, 0.8f, 0.7f) * 0.55f);
+        var raincoat = EmissiveTexMat("FigureSkin", new Color(0.72f, 0.68f, 0.55f), "raincoat", 1f, 1f, new Color(0.85f, 0.8f, 0.62f) * 0.35f);
+        var building = TexMat("Building", new Color(0.35f, 0.35f, 0.36f), "building", 2f, 1f);
+        var rail = TexMat("Rail", new Color(0.3f, 0.31f, 0.32f), "cabin_metal", 4f, 0.3f);
 
         var systems = new GameObject("Systems");
         var shift = systems.AddComponent<ShiftController>();
@@ -57,6 +65,22 @@ public static class PrototypeSceneBuilder
         wheel.transform.localScale = new Vector3(0.52f, 0.08f, 0.52f);
         wheel.transform.rotation = Quaternion.Euler(72f, 0f, 0f);
         wheel.GetComponent<Renderer>().sharedMaterial = dark;
+        for (int s = 0; s < 3; s++)
+        {
+            float a = s * 120f * Mathf.Deg2Rad;
+            Cube($"Wheel Spoke {s + 1}", cabin.transform,
+                new Vector3(-0.75f + Mathf.Cos(a) * 0.17f, 1.65f + Mathf.Sin(a) * 0.07f, -1.15f + Mathf.Sin(a) * 0.055f),
+                new Vector3(0.34f, 0.045f, 0.03f), rubber, new Vector3(72f, 0f, s * 120f));
+        }
+        var knob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        knob.name = "Gear Knob";
+        knob.transform.SetParent(cabin.transform);
+        knob.transform.localPosition = new Vector3(1.25f, 1.96f, -1.02f);
+        knob.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+        knob.GetComponent<Renderer>().sharedMaterial = rubber;
+        Object.DestroyImmediate(knob.GetComponent<Collider>());
+        Cube("Handrail Left", cabin.transform, new Vector3(-1.45f, 3.4f, -0.6f), new Vector3(0.035f, 0.035f, 2.4f), rubber);
+        Cube("Handrail Right", cabin.transform, new Vector3(1.45f, 3.4f, -0.6f), new Vector3(0.035f, 0.035f, 2.4f), rubber);
 
         var glass = TransparentMaterial("WindshieldGlass", new Color(0.75f, 0.82f, 0.85f, 0.07f));
         Cube("Windshield", cabin.transform, new Vector3(0f, 2.6f, -0.5f), new Vector3(4.1f, 1.7f, 0.03f), glass);
@@ -79,18 +103,63 @@ public static class PrototypeSceneBuilder
         cabinLight.range = 8f;
         cabinLight.intensity = 2.2f;
 
+        var gaugeLight = EmissiveMaterial("GaugePanel", new Color(0.1f, 0.14f, 0.12f), new Color(0.25f, 0.75f, 0.45f) * 0.55f);
+        Cube("InstrumentPanel", cabin.transform, new Vector3(-0.75f, 1.52f, -0.92f), new Vector3(1.1f, 0.2f, 0.04f), gaugeLight, new Vector3(-18f, 0f, 0f));
+        var dashGlow = new GameObject("Dashboard Glow");
+        dashGlow.transform.SetParent(cabin.transform);
+        dashGlow.transform.localPosition = new Vector3(-0.75f, 1.55f, -0.8f);
+        var dashLight = dashGlow.AddComponent<Light>();
+        dashLight.type = LightType.Point;
+        dashLight.range = 2.5f;
+        dashLight.intensity = 0.9f;
+        dashLight.color = new Color(0.35f, 0.75f, 0.5f);
+
+        foreach (float sideX in new[] { -1.35f, 1.35f })
+        {
+            var head = new GameObject($"Headlight {(sideX < 0 ? "Left" : "Right")}");
+            head.transform.SetParent(cabin.transform);
+            head.transform.localPosition = new Vector3(sideX, 1.0f, 0.6f);
+            head.transform.localRotation = Quaternion.Euler(10f, 0f, 0f);
+            var hl = head.AddComponent<Light>();
+            hl.type = LightType.Spot;
+            hl.range = 55f;
+            hl.spotAngle = 64f;
+            hl.intensity = 3.4f;
+            hl.color = new Color(1f, 0.94f, 0.82f);
+        }
+
+        var moon = new GameObject("Moonlight");
+        moon.transform.rotation = Quaternion.Euler(35f, 215f, 0f);
+        var moonLight = moon.AddComponent<Light>();
+        moonLight.type = LightType.Directional;
+        moonLight.intensity = 0.14f;
+        moonLight.color = new Color(0.55f, 0.65f, 0.85f);
+
         const float segmentLength = 40f;
         var segments = new Transform[4];
+        var buildingHeights = new[] { 9f, 15f, 11f };
         for (int i = 0; i < segments.Length; i++)
         {
             var segment = new GameObject($"Road Segment {i + 1}");
             segment.transform.position = new Vector3(0f, 0f, i * segmentLength);
             Cube("Asphalt", segment.transform, new Vector3(0f, -0.15f, 0f), new Vector3(8f, 0.25f, segmentLength), road);
             Cube("CentreLine", segment.transform, new Vector3(0f, 0.005f, 0f), new Vector3(0.12f, 0.015f, segmentLength - 2f), line);
+            Cube("GuardRail Left", segment.transform, new Vector3(-4.7f, 0.55f, 0f), new Vector3(0.08f, 0.45f, segmentLength), rail);
+            Cube("GuardRail Right", segment.transform, new Vector3(4.7f, 0.55f, 0f), new Vector3(0.08f, 0.45f, segmentLength), rail);
             for (int z = -15; z <= 15; z += 10)
             {
-                StreetLamp(segment.transform, new Vector3(-5f, 0f, z), dark, lamp);
-                StreetLamp(segment.transform, new Vector3(5f, 0f, z + 5f), dark, lamp);
+                StreetLamp(segment.transform, new Vector3(-5f, 0f, z), dark, lampGlow);
+                StreetLamp(segment.transform, new Vector3(5f, 0f, z + 5f), dark, lampGlow);
+            }
+            for (int b = 0; b < buildingHeights.Length; b++)
+            {
+                float height = buildingHeights[(b + i) % buildingHeights.Length];
+                Cube($"Building Block {b + 1} Left", segment.transform,
+                    new Vector3(-(13.5f + b * 4f), height * 0.5f, -13f + b * 14f),
+                    new Vector3(6.5f + b, height, 7.5f), building);
+                Cube($"Building Block {b + 1} Right", segment.transform,
+                    new Vector3(13.5f + b * 4f, height * 0.55f + 1f, -6f + b * 14f),
+                    new Vector3(7.5f + b, height + 2f, 7f), building);
             }
             segments[i] = segment.transform;
         }
@@ -100,10 +169,12 @@ public static class PrototypeSceneBuilder
 
         var stop = new GameObject("First Stop Event");
         stop.transform.position = new Vector3(5.4f, 0f, 62f);
-        Cube("ShelterBack", stop.transform, new Vector3(0f, 1.6f, 0f), new Vector3(2.8f, 3.2f, 0.15f), dark);
-        Cube("ShelterRoof", stop.transform, new Vector3(0f, 3.25f, -0.45f), new Vector3(3.2f, 0.18f, 1.2f), dark);
+        Cube("ShelterBack", stop.transform, new Vector3(0f, 1.6f, 0f), new Vector3(2.8f, 3.2f, 0.15f), concrete);
+        Cube("ShelterRoof", stop.transform, new Vector3(0f, 3.25f, -0.45f), new Vector3(3.2f, 0.18f, 1.2f), concrete);
         Cube("StopSign", stop.transform, new Vector3(-2f, 1.8f, 0f), new Vector3(0.18f, 3.6f, 0.18f), dark);
-        var anomaly = Cube("Fourth Passenger", stop.transform, new Vector3(0f, 1.1f, -0.7f), new Vector3(0.55f, 2.2f, 0.42f), dark);
+        Cube("StopSignBoard", stop.transform, new Vector3(-2f, 3.1f, 0f), new Vector3(1.1f, 0.9f, 0.1f), signFace);
+        Cube("Billboard Box", stop.transform, new Vector3(1.3f, 2.4f, 0.6f), new Vector3(2.2f, 1.3f, 0.15f), billboardMat);
+        var anomaly = Cube("Fourth Passenger", stop.transform, new Vector3(0f, 1.1f, -0.7f), new Vector3(0.55f, 2.2f, 0.42f), raincoat);
         firstStop.Configure(shift, stop.transform, anomaly);
 
         var repeatedSigns = new GameObject("Repeated Stop Signs");
@@ -114,7 +185,7 @@ public static class PrototypeSceneBuilder
             sign.transform.SetParent(repeatedSigns.transform);
             sign.transform.localPosition = new Vector3(0f, 0f, i * 9f);
             Cube("Post", sign.transform, new Vector3(0f, 1.7f, 0f), new Vector3(0.16f, 3.4f, 0.16f), dark);
-            Cube("Board", sign.transform, new Vector3(0f, 3.1f, 0f), new Vector3(1.8f, 0.75f, 0.16f), lamp);
+            Cube("Board", sign.transform, new Vector3(0f, 3.1f, 0f), new Vector3(1.8f, 0.75f, 0.16f), signFace);
         }
         repeatedStop.Configure(shift, firstStop, repeatedSigns.transform);
 
@@ -123,11 +194,10 @@ public static class PrototypeSceneBuilder
         mirrorEvent.Configure(shift, repeatedStop, mirrorDriver);
         var fifthMark = Cube("Hidden Fifth Gear Mark", cabin.transform, new Vector3(1.55f, 1.52f, -1.28f), new Vector3(0.12f, 0.42f, 0.025f), lamp, new Vector3(0f, 0f, -20f));
         finalEvent.Configure(shift, mirrorEvent, fifthMark);
-        var figureSkin = EmissiveMaterial("FigureSkin", new Color(0.72f, 0.68f, 0.55f), new Color(0.85f, 0.8f, 0.62f) * 0.55f);
         var roadFigure = new GameObject("Road Figure");
         roadFigure.transform.position = new Vector3(0f, 0f, 40f);
-        Cube("Figure Body", roadFigure.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.55f, 2.2f, 0.32f), figureSkin);
-        Cube("Figure Head", roadFigure.transform, new Vector3(0f, 2.4f, 0f), new Vector3(0.28f, 0.32f, 0.26f), figureSkin);
+        Cube("Figure Body", roadFigure.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.55f, 2.2f, 0.32f), raincoat);
+        Cube("Figure Head", roadFigure.transform, new Vector3(0f, 2.4f, 0f), new Vector3(0.28f, 0.32f, 0.26f), raincoat);
         var crossingEvent = new GameObject("Crossing Figure Event").AddComponent<CrossingFigureEvent>();
         crossingEvent.Configure(shift, repeatedStop, roadFigure.transform);
         hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent, crossingEvent);
@@ -151,6 +221,26 @@ public static class PrototypeSceneBuilder
     {
         Build();
         EditorApplication.Exit(0);
+    }
+
+    private static Material TexMat(string name, Color color, string texture, float tx, float ty)
+    {
+        var material = Material(name, color);
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/Textures/{texture}.png");
+        if (tex != null)
+        {
+            material.mainTexture = tex;
+            material.mainTextureScale = new Vector2(tx, ty);
+        }
+        return material;
+    }
+
+    private static Material EmissiveTexMat(string name, Color color, string texture, float tx, float ty, Color emission)
+    {
+        var material = TexMat(name, color, texture, tx, ty);
+        material.EnableKeyword("_EMISSION");
+        material.SetColor("_EmissionColor", emission);
+        return material;
     }
 
     private static Material EmissiveMaterial(string name, Color color, Color emission)
