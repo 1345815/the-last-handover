@@ -26,6 +26,7 @@ public static class PrototypeSceneBuilder
         var looper = systems.AddComponent<RoadLooper>();
         var reality = systems.AddComponent<RealityController>();
         var hud = systems.AddComponent<PrototypeHUD>();
+        var firstStop = systems.AddComponent<FirstStopEvent>();
 
         var cameraObject = new GameObject("Driver Camera");
         cameraObject.transform.position = new Vector3(0f, 2.15f, -3.5f);
@@ -77,7 +78,15 @@ public static class PrototypeSceneBuilder
 
         looper.Configure(shift, segments, segmentLength);
         reality.Configure(shift, camera, cabinLight);
-        hud.Configure(shift);
+
+        var stop = new GameObject("First Stop Event");
+        stop.transform.position = new Vector3(5.4f, 0f, 62f);
+        Cube("ShelterBack", stop.transform, new Vector3(0f, 1.6f, 0f), new Vector3(2.8f, 3.2f, 0.15f), dark);
+        Cube("ShelterRoof", stop.transform, new Vector3(0f, 3.25f, -0.45f), new Vector3(3.2f, 0.18f, 1.2f), dark);
+        Cube("StopSign", stop.transform, new Vector3(-2f, 1.8f, 0f), new Vector3(0.18f, 3.6f, 0.18f), dark);
+        var anomaly = Cube("Fourth Passenger", stop.transform, new Vector3(0f, 1.1f, -0.7f), new Vector3(0.55f, 2.2f, 0.42f), dark);
+        firstStop.Configure(shift, stop.transform, anomaly);
+        hud.Configure(shift, firstStop);
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);
