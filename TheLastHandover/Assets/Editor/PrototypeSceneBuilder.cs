@@ -29,6 +29,7 @@ public static class PrototypeSceneBuilder
         var firstStop = systems.AddComponent<FirstStopEvent>();
         var repeatedStop = systems.AddComponent<RepeatedStopEvent>();
         var mirrorEvent = systems.AddComponent<MirrorDriverEvent>();
+        var finalEvent = systems.AddComponent<FinalShiftEvent>();
 
         var cameraObject = new GameObject("Driver Camera");
         cameraObject.transform.position = new Vector3(0f, 2.15f, -3.5f);
@@ -104,7 +105,9 @@ public static class PrototypeSceneBuilder
         var mirror = Cube("Rear-view Mirror", cabin.transform, new Vector3(0f, 3.05f, -0.72f), new Vector3(1.65f, 0.48f, 0.12f), dark);
         var mirrorDriver = Cube("Mirror Driver", mirror.transform, new Vector3(0f, 0f, -0.18f), new Vector3(0.22f, 0.65f, 0.08f), lamp);
         mirrorEvent.Configure(shift, repeatedStop, mirrorDriver);
-        hud.Configure(shift, firstStop, repeatedStop, mirrorEvent);
+        var fifthMark = Cube("Hidden Fifth Gear Mark", cabin.transform, new Vector3(1.55f, 1.52f, -1.28f), new Vector3(0.12f, 0.42f, 0.025f), lamp, new Vector3(0f, 0f, -20f));
+        finalEvent.Configure(shift, mirrorEvent, fifthMark);
+        hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent);
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);
