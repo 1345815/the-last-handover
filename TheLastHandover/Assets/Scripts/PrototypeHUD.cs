@@ -7,18 +7,20 @@ namespace LastHandover
         [SerializeField] private ShiftController shift;
         [SerializeField] private FirstStopEvent stopEvent;
         [SerializeField] private RepeatedStopEvent repeatedStop;
+        [SerializeField] private CrossingFigureEvent crossingFigure;
         [SerializeField] private MirrorDriverEvent mirrorEvent;
         [SerializeField] private FinalShiftEvent finalEvent;
         private GUIStyle title;
         private GUIStyle small;
 
-        public void Configure(ShiftController controller, FirstStopEvent firstStop = null, RepeatedStopEvent secondStop = null, MirrorDriverEvent thirdEvent = null, FinalShiftEvent ending = null)
+        public void Configure(ShiftController controller, FirstStopEvent firstStop = null, RepeatedStopEvent secondStop = null, MirrorDriverEvent thirdEvent = null, FinalShiftEvent ending = null, CrossingFigureEvent figure = null)
         {
             shift = controller;
             stopEvent = firstStop;
             repeatedStop = secondStop;
             mirrorEvent = thirdEvent;
             finalEvent = ending;
+            crossingFigure = figure;
         }
 
         private void EnsureStyles()
@@ -49,6 +51,8 @@ namespace LastHandover
                     ? finalEvent.Objective
                     : mirrorEvent != null && mirrorEvent.IsActive
                     ? mirrorEvent.Objective
+                    : crossingFigure != null && crossingFigure.IsActive
+                    ? crossingFigure.Objective
                     : repeatedStop != null && repeatedStop.IsActive ? repeatedStop.Objective : stopEvent.Objective;
                 GUI.Label(new Rect(40, Screen.height - 96, 620, 28), objective, small);
                 GUI.Label(new Rect(40, Screen.height - 68, 240, 28), $"车内乘客：{stopEvent.PassengerCount}", small);

@@ -30,7 +30,7 @@ namespace LastHandover
             {
                 if (previous == null || !previous.IsComplete) return;
                 travelled += shift.RoadSpeed * Time.deltaTime;
-                if (travelled < 30f) return;
+                if (travelled < 44f) return;
                 phase = Phase.Waiting;
                 Objective = "终点再次变回第一站。换挡杆旁的刻痕像一个数字。按住 Shift。";
             }

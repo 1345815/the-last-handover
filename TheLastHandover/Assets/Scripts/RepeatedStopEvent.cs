@@ -31,7 +31,7 @@ namespace LastHandover
             {
                 if (firstStop == null || !firstStop.IsComplete) return;
                 travelled += shift.RoadSpeed * Time.deltaTime;
-                if (travelled < 28f) return;
+                if (travelled < 42f) return;
                 phase = Phase.Approaching;
                 signsRoot.gameObject.SetActive(true);
                 Objective = "同一站牌连续出现。广播报出了三个不同站名。";

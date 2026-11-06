@@ -58,6 +58,19 @@ public static class PrototypeSceneBuilder
         wheel.transform.rotation = Quaternion.Euler(72f, 0f, 0f);
         wheel.GetComponent<Renderer>().sharedMaterial = dark;
 
+        var glass = TransparentMaterial("WindshieldGlass", new Color(0.75f, 0.82f, 0.85f, 0.07f));
+        Cube("Windshield", cabin.transform, new Vector3(0f, 2.6f, -0.5f), new Vector3(4.1f, 1.7f, 0.03f), glass);
+        var wiperLeft = new GameObject("Wiper Left Pivot");
+        wiperLeft.transform.SetParent(cabin.transform);
+        wiperLeft.transform.localPosition = new Vector3(-0.9f, 1.8f, -0.44f);
+        Cube("Wiper Left Arm", wiperLeft.transform, new Vector3(0f, 0.42f, 0.02f), new Vector3(0.05f, 0.84f, 0.03f), dark);
+        var wiperRight = new GameObject("Wiper Right Pivot");
+        wiperRight.transform.SetParent(cabin.transform);
+        wiperRight.transform.localPosition = new Vector3(0.9f, 1.8f, -0.44f);
+        Cube("Wiper Right Arm", wiperRight.transform, new Vector3(0f, 0.42f, 0.02f), new Vector3(0.05f, 0.84f, 0.03f), dark);
+        var wiperController = new GameObject("Wipers").AddComponent<WiperController>();
+        wiperController.Configure(wiperLeft.transform, wiperRight.transform);
+
         var cabinLightObject = new GameObject("Cabin Light");
         cabinLightObject.transform.SetParent(cabin.transform);
         cabinLightObject.transform.position = new Vector3(0f, 3.25f, -1.5f);
@@ -110,13 +123,21 @@ public static class PrototypeSceneBuilder
         mirrorEvent.Configure(shift, repeatedStop, mirrorDriver);
         var fifthMark = Cube("Hidden Fifth Gear Mark", cabin.transform, new Vector3(1.55f, 1.52f, -1.28f), new Vector3(0.12f, 0.42f, 0.025f), lamp, new Vector3(0f, 0f, -20f));
         finalEvent.Configure(shift, mirrorEvent, fifthMark);
-        hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent);
+        var figureSkin = EmissiveMaterial("FigureSkin", new Color(0.72f, 0.68f, 0.55f), new Color(0.85f, 0.8f, 0.62f) * 0.55f);
+        var roadFigure = new GameObject("Road Figure");
+        roadFigure.transform.position = new Vector3(0f, 0f, 40f);
+        Cube("Figure Body", roadFigure.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.55f, 2.2f, 0.32f), figureSkin);
+        Cube("Figure Head", roadFigure.transform, new Vector3(0f, 2.4f, 0f), new Vector3(0.28f, 0.32f, 0.26f), figureSkin);
+        var crossingEvent = new GameObject("Crossing Figure Event").AddComponent<CrossingFigureEvent>();
+        crossingEvent.Configure(shift, repeatedStop, roadFigure.transform);
+        hud.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent, crossingEvent);
         var endingLoop = systems.AddComponent<EndingLoop>();
         endingLoop.Configure(finalEvent);
         var audioDirector = systems.AddComponent<AudioDirector>();
         audioDirector.Configure(shift, firstStop, repeatedStop, mirrorEvent, finalEvent,
             Clip("engine_loop"), Clip("radio_static"), Clip("gear_clunk"),
-            Clip("door_hiss"), Clip("broadcast_chime"), Clip("ending_surge"));
+            Clip("door_hiss"), Clip("broadcast_chime"), Clip("ending_surge"),
+            Clip("rain_loop"), crossingEvent);
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);
@@ -130,6 +151,28 @@ public static class PrototypeSceneBuilder
     {
         Build();
         EditorApplication.Exit(0);
+    }
+
+    private static Material EmissiveMaterial(string name, Color color, Color emission)
+    {
+        var material = Material(name, color);
+        material.EnableKeyword("_EMISSION");
+        material.SetColor("_EmissionColor", emission);
+        return material;
+    }
+
+    private static Material TransparentMaterial(string name, Color color)
+    {
+        var material = Material(name, color);
+        material.SetFloat("_Mode", 3f);
+        material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetInt("_ZWrite", 0);
+        material.DisableKeyword("_ALPHATEST_ON");
+        material.EnableKeyword("_ALPHABLEND_ON");
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.renderQueue = 3000;
+        return material;
     }
 
     private static AudioClip Clip(string name)

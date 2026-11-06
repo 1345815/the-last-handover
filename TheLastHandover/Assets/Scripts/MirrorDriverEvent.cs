@@ -42,7 +42,7 @@ namespace LastHandover
         {
             if (phase != Phase.Locked || previous == null || !previous.IsComplete) return;
             travelled += shift.RoadSpeed * Time.deltaTime;
-            if (travelled < 32f) return;
+            if (travelled < 62f) return;
             phase = Phase.Watching;
             mirrorDriver.SetActive(true);
             Objective = "后视镜里多出一名司机。升到三档，迫使它暴露动作。";

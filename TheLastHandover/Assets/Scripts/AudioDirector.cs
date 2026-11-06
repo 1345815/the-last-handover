@@ -15,11 +15,13 @@ namespace LastHandover
         [SerializeField] private ShiftController shift;
         [SerializeField] private FirstStopEvent firstStop;
         [SerializeField] private RepeatedStopEvent repeatedStop;
+        [SerializeField] private CrossingFigureEvent crossingFigure;
         [SerializeField] private MirrorDriverEvent mirrorEvent;
         [SerializeField] private FinalShiftEvent finalEvent;
 
         private AudioSource engine;
         private AudioSource radio;
+        private AudioSource rain;
         private AudioSource fx;
 
         private string lastObjective;
@@ -28,16 +30,19 @@ namespace LastHandover
 
         public void Configure(ShiftController controller, FirstStopEvent first, RepeatedStopEvent second,
             MirrorDriverEvent mirror, FinalShiftEvent final, AudioClip engineClip, AudioClip staticClip,
-            AudioClip clunkClip, AudioClip hissClip, AudioClip chimeClip, AudioClip endingClip)
+            AudioClip clunkClip, AudioClip hissClip, AudioClip chimeClip, AudioClip endingClip,
+            AudioClip rainClip, CrossingFigureEvent figure = null)
         {
             shift = controller;
             firstStop = first;
             repeatedStop = second;
             mirrorEvent = mirror;
             finalEvent = final;
+            crossingFigure = figure;
 
             engine = AddLoopSource(engineClip, 0.5f);
             radio = AddLoopSource(staticClip, 0.13f);
+            rain = AddLoopSource(rainClip, 0.2f);
             fx = gameObject.AddComponent<AudioSource>();
             fx.playOnAwake = false;
             fx.volume = 0.85f;
@@ -57,6 +62,7 @@ namespace LastHandover
         {
             if (engine != null && !engine.isPlaying) engine.Play();
             if (radio != null && !radio.isPlaying) radio.Play();
+            if (rain != null && !rain.isPlaying) rain.Play();
             lastObjective = CurrentObjective();
             if (firstStop != null) lastPassengers = firstStop.PassengerCount;
         }
@@ -105,6 +111,7 @@ namespace LastHandover
         {
             if (finalEvent != null && finalEvent.IsActive) return finalEvent.Objective;
             if (mirrorEvent != null && mirrorEvent.IsActive) return mirrorEvent.Objective;
+            if (crossingFigure != null && crossingFigure.IsActive) return crossingFigure.Objective;
             if (repeatedStop != null && repeatedStop.IsActive) return repeatedStop.Objective;
             return firstStop != null ? firstStop.Objective : "";
         }
