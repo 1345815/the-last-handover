@@ -28,6 +28,7 @@ public static class PrototypeSceneBuilder
         var hud = systems.AddComponent<PrototypeHUD>();
         var firstStop = systems.AddComponent<FirstStopEvent>();
         var repeatedStop = systems.AddComponent<RepeatedStopEvent>();
+        var mirrorEvent = systems.AddComponent<MirrorDriverEvent>();
 
         var cameraObject = new GameObject("Driver Camera");
         cameraObject.transform.position = new Vector3(0f, 2.15f, -3.5f);
@@ -99,7 +100,11 @@ public static class PrototypeSceneBuilder
             Cube("Board", sign.transform, new Vector3(0f, 3.1f, 0f), new Vector3(1.8f, 0.75f, 0.16f), lamp);
         }
         repeatedStop.Configure(shift, firstStop, repeatedSigns.transform);
-        hud.Configure(shift, firstStop, repeatedStop);
+
+        var mirror = Cube("Rear-view Mirror", cabin.transform, new Vector3(0f, 3.05f, -0.72f), new Vector3(1.65f, 0.48f, 0.12f), dark);
+        var mirrorDriver = Cube("Mirror Driver", mirror.transform, new Vector3(0f, 0f, -0.18f), new Vector3(0.22f, 0.65f, 0.08f), lamp);
+        mirrorEvent.Configure(shift, repeatedStop, mirrorDriver);
+        hud.Configure(shift, firstStop, repeatedStop, mirrorEvent);
 
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.02f, 0.025f, 0.03f);

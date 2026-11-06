@@ -6,7 +6,7 @@ You are taking over the final night bus. The gearbox does more than change speed
 
 ## Current milestone
 
-Prototype 0.2 contains two complete anomaly loops: identify and remove a fourth passenger by shifting realities, then stop a repeating bus-stop loop by listening in neutral. It intentionally contains no external assets.
+Prototype 0.3 contains three anomaly loops: identify and remove a fourth passenger, stop a repeating bus-stop loop by listening in neutral, and break synchronization with a driver visible only in the rear-view mirror. It intentionally contains no external assets.
 
 ## Controls
 
