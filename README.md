@@ -8,7 +8,7 @@ You are taking over the final night bus. The gearbox does more than change speed
 
 ## Current milestone
 
-**Prototype 0.5** — five anomaly beats, fully playable end to end:
+**Prototype 0.8** — five anomaly beats, fully playable end to end, and every ghost on the route is a procedural low-poly **Nailong** (the one in the road does not hide from the rain):
 
 1. **The fourth passenger** — the counter says four; the manual says three. Observe in second gear, then let the impossible one off in neutral.
 2. **The repeating stop** — the same sign keeps coming back. Silence the engine, listen through the static, and confirm the true last-but-one stop.
@@ -16,7 +16,7 @@ You are taking over the final night bus. The gearbox does more than change speed
 4. **The mirror driver** — someone extra is driving from the rear-view mirror. Force it to match you in third, then break it down to first.
 5. **The fifth gear** — after the mirror event, a new notch appears beside the lever that was never there. Hold **Shift** until it reveals itself, keep holding, and shift in. The handover is complete — and the next bus departs at 00:13.
 
-All visuals, audio and the VHS post-process are generated procedurally; the project intentionally contains no external assets. Rain sweeps the windshield, the wipers never stop, and the radio mostly keeps static.
+All visuals, audio and the VHS post-process are generated procedurally; the project intentionally contains no external assets. Rain sweeps the windshield, the wipers never stop, and the radio mostly keeps static. The Nailong that stands in the road does not hide from the rain, and the 00:13 shift is driven by one as well.
 
 ![Ending](Docs/screenshots/ending.png)
 
